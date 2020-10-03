@@ -1,12 +1,12 @@
 package quizCore
 
 import (
-	"bufio"
 	"encoding/csv"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 type Question struct {
@@ -37,19 +37,32 @@ func ReadCSV(csvFilename string) ([]Question, error) {
 	return questions, nil
 }
 
-func StartQuiz(csvFilename string) (int, int, error) {
+func StartQuiz(csvFilename string, timeLimit int) (int, int, error) {
 	questions, csvRdError := ReadCSV(csvFilename)
 	if csvRdError != nil {
 		return -1, -1, errors.New("Unable to start quiz: " + csvRdError.Error())
 	}
 	score := 0
-	consoleReader := bufio.NewReader(os.Stdin)
+	quizTimer := time.NewTimer(time.Duration(timeLimit) * time.Second)
 	for questionNum := 0; questionNum < len(questions); questionNum++ {
 		fmt.Printf("Question %d: %s: ", questionNum+1, questions[questionNum].question)
-		userAnswer, _ := consoleReader.ReadString('\n')
-		if strings.ToLower(strings.TrimSpace(userAnswer)) == strings.ToLower(questions[questionNum].answer) {
-			score = score + 1
+		answerCh := make(chan string)
+		go readUserIp(answerCh)
+		select {
+		case <-quizTimer.C:
+			return score, len(questions) - score, nil
+		case answer := <-answerCh:
+			if strings.ToLower(strings.TrimSpace(answer)) == strings.ToLower(questions[questionNum].answer) {
+				score = score + 1
+			}
 		}
+
 	}
 	return score, len(questions) - score, nil
+}
+
+func readUserIp(answerCh chan string) {
+	var userAnswer string
+	fmt.Scanf("%s\n", &userAnswer)
+	answerCh <- userAnswer
 }
