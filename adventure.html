@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <title> Choose Your Own Adventure</title>
+</head>
+
+<body>
+    <h1> {{ .Title }} </h1>
+    <div>
+        {{range .Story}}
+        <p> {{.}}</p>
+        {{end}}
+    </div>
+    <div>
+        {{if not .Options}}
+        <ul>
+            <li><a href="/intro">Start Over Again</a></li>
+        </ul>
+        {{end}}
+        {{if .Options}}
+        <ul>
+            {{range .Options}}
+            <li> <a href="/{{.Arc}}"> {{.Text}} </a></li>
+            {{end}}
+        </ul>
+        {{end}}
+    </div>
+</body>
+
+</html>
