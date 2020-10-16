@@ -26,7 +26,6 @@ func ConvertToPdf(pdfFileName string, images []string) error {
 
 func CompressPdf(pdfFileName string) (string, error) {
 	pdfConfiguration := pdfcpu.NewDefaultConfiguration()
-	fmt.Println(strings.Split(pdfFileName, ".")[len(strings.Split(pdfFileName, "."))-2])
 	outputFileName := fmt.Sprintf("%s%s", strings.Split(pdfFileName, ".")[0], "_optimized.pdf")
 	return outputFileName, pdfcpuapi.OptimizeFile(pdfFileName, outputFileName, pdfConfiguration)
 }
