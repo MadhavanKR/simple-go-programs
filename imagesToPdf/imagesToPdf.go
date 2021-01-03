@@ -29,3 +29,7 @@ func CompressPdf(pdfFileName string) (string, error) {
 	outputFileName := fmt.Sprintf("%s%s", strings.Split(pdfFileName, ".")[0], "_optimized.pdf")
 	return outputFileName, pdfcpuapi.OptimizeFile(pdfFileName, outputFileName, pdfConfiguration)
 }
+
+func CombinePdfs(pdfFiles []string, outputFileName string) {
+	// pdfcpuapi.MergeAppendFile
+}

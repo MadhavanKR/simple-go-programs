@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"net/smtp"
 	"os"
 )
@@ -15,7 +16,7 @@ func main() {
 	}
 	fmt.Println("email ids are: ", emailIDList)
 	for index := range emailIDList {
-		sendEmail(emailIDList[index:index])
+		sendEmail(emailIDList[index : index+1])
 	}
 }
 
@@ -50,11 +51,20 @@ func (s *smtpServer) Address() string {
 	return s.host + ":" + s.port
 }
 
+func getEmailBody(filename string) []byte {
+	fileBytes, fileReadErr := ioutil.ReadFile(filename)
+	if fileReadErr != nil {
+		fmt.Println("unable to read email body: ", fileReadErr)
+		os.Exit(1)
+	}
+	return fileBytes
+}
+
 func sendEmail(to []string) {
 
 	from := "madhavan.kalkunte@gmail.com"
-	password := ""
-
+	password := "fgwctiuqrmjzumwd"
+	fmt.Println("to: ", to)
 	// smtp server configuration.
 	smtpServer := smtpServer{host: "smtp.gmail.com", port: "587"}
 	// Message.
