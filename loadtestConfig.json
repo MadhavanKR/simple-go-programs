@@ -1,0 +1,24 @@
+[
+    {
+        "url": "url1",
+        "httpMethod": "POST",
+        "data": {},
+        "headers": {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": "Basic base64encode-username:password"
+        },
+        "numCalls": 0,
+        "blockSize": 2
+    },
+    {
+        "url": "url2",
+        "httpMethod": "POST",
+        "data": {},
+        "headers": {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer <bearerToken>"
+        },
+        "numCalls": 1,
+        "blockSize": 1
+    }
+]

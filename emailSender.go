@@ -70,9 +70,9 @@ func sendEmail(to []string) {
 	// Message.
 	message := []byte("This is a really unimaginative message, I know.")
 	// Authentication.
-	auth := smtp.PlainAuth("", from, password, smtpServer.host)
-	_, dailErr := smtp.Dial(smtpServer.Address())
-	fmt.Println("dail error: ", dailErr)
+	auth := smtp.PlainAuth("", "Ubuntu", password, smtpServer.host)
+	//_, dailErr := smtp.Dial(smtpServer.Address())
+	//fmt.Println("dail error: ", dailErr)
 	// Sending email.
 	fmt.Printf("smtp server address:%s\n", smtpServer.Address())
 	err := smtp.SendMail(smtpServer.Address(), auth, from, to, message)
