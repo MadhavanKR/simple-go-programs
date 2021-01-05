@@ -18,7 +18,6 @@ func init() {
 		fmt.Println("error while connecting to database: ", boltdbCreateErr)
 		os.Exit(1)
 	}
-	fmt.Println("successfully connected to database")
 }
 
 func addTodo(todoTask string) error {
@@ -32,9 +31,9 @@ func addTodo(todoTask string) error {
 			return nextSeqErr
 		}
 		todoStruct := todo{
-			task:   todoTask,
-			id:     id,
-			status: "created",
+			Task:   todoTask,
+			Id:     id,
+			Status: "created",
 		}
 		fmt.Println("inserting: ", todoStruct)
 		value, marshalErr := json.Marshal(todoStruct)
@@ -57,17 +56,15 @@ func getTodos() (map[string][]todo, error) {
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
 			todoStruct := todo{}
 			unmarshalErr := json.Unmarshal(value, &todoStruct)
-			fmt.Println("key is: ", string(key))
-			fmt.Println("value is ", todoStruct)
 			if unmarshalErr != nil {
 				return unmarshalErr
 			}
-			if todos, ok := result[todoStruct.status]; ok {
+			if todos, ok := result[todoStruct.Status]; ok {
 				todos = append(todos, todoStruct)
 			} else {
 				tempTodos := make([]todo, 1)
 				tempTodos[0] = todoStruct
-				result[todoStruct.status] = tempTodos
+				result[todoStruct.Status] = tempTodos
 			}
 		}
 		return nil
@@ -76,38 +73,40 @@ func getTodos() (map[string][]todo, error) {
 }
 
 func completeTodos(id uint64) error {
-	boltdb.Update(func(tx *bolt.Tx) error {
+	dbUpdateErr := boltdb.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("default"))
 		if bucket == nil {
 			return errors.New("No todos created yet")
 		}
-
-		bucket.ForEach(func(key []byte, value []byte) error {
+		cursor := bucket.Cursor()
+		updateDone := false
+		for key, value := cursor.First(); key != nil && !updateDone; key, value = cursor.Next() {
 			todoStruct := todo{}
-			unmarshalErr := json.Unmarshal(value, todoStruct)
-
-			//update the entry only if id matches
-			if todoStruct.id == id {
-				if unmarshalErr != nil {
-					return unmarshalErr
-				}
-				todoStruct.status = "completed"
-				byteTodoStruct, marshalErr := json.Marshal(todoStruct)
+			unmarshalErr := json.Unmarshal(value, &todoStruct)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+			if todoStruct.Id == id {
+				todoStruct.Status = "completed"
+				updatedTodoBytes, marshalErr := json.Marshal(todoStruct)
 				if marshalErr != nil {
+					fmt.Println("unable to complete your todo: ", marshalErr)
 					return marshalErr
 				}
-				bucket.Put(key, byteTodoStruct)
-				return nil
+				bucket.Put(key, updatedTodoBytes)
+				updateDone = true
 			}
-			return nil
-		})
+		}
+		if !updateDone {
+			return errors.New(fmt.Sprintf("todo with id %d not found\n", id))
+		}
 		return nil
 	})
-	return nil
+	return dbUpdateErr
 }
 
 type todo struct {
-	id     uint64 `json: "id"`
-	task   string `json: "task"`
-	status string `json: "status"`
+	Id     uint64 `json: "id"`
+	Task   string `json: "task"`
+	Status string `json: "status"`
 }
